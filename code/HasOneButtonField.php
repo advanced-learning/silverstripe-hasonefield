@@ -103,8 +103,13 @@ class GridFieldHasOneEditButton extends GridFieldAddNewButton implements GridFie
             'ButtonName' => $recordExists ? 'Unlink existing and add new' : 'Create and link new'
         ]);
 
+        $fieldIsDropdown = $gridField->getList()->count() < 100;
+        $message = $fieldIsDropdown ?
+            "Choose an existing <em>$objectName</em> from the above dropdown, or...<br />" :
+            "Type the ID of an existing <em>$objectName</em> in the above field, or...<br />";
+
         $fragments = [
-            'before' => "Choose an existing <em>$objectName</em> from the above dropdown, or...<br />",
+            'before' => $message,
             'after' => $newButtonData->renderWith('GridFieldAddNewbutton'),
         ];
 
