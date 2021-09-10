@@ -152,7 +152,7 @@ class GridFieldHasOneEditButton extends GridFieldAddNewButton implements GridFie
         }
 
         $fragments = [
-            'before' => $message,
+            'before' => "Choose an existing <em>$objectName</em> from the above dropdown, or...<br />",
             'after' => $newButtonData->renderWith('GridFieldAddNewbutton'),
         ];
 
