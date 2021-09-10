@@ -2,26 +2,21 @@
 
 Allows you to create a CMS button for creating and editing a single related object. It is actually a grid field, but just looks like a button.
 
+Note that this demo gif is not a perfect representation of our fork, but gets the point across.
+
 ![demo](https://raw.github.com/wiki/burnbright/silverstripe-hasonefield/images/hasonefield.gif)
 
 ## Usage
 
-In Warehouse.php context:
 ```php
-	public function getCMSFields() {
-		$fields = parent::getCMSFields();
-		if($this->Address()->exists()){
-			$fields->addFieldsToTab("Root.Main", array(
-				ReadonlyField::create("add", "Address", $this->Address()->toString())
-			));
-		}
-		$fields->removeByName("AddressID");
-		$fields->addFieldToTab("Root.Main",
-			HasOneButtonField::create("Address", "Address", $this) //here!
-		);
+    public function getCMSFields() {
+        $fields = parent::getCMSFields();
 
-		return $fields;
-	}
+        // The buttons will be automatically added below the "AddressID" field.
+        HasOneButtonField::addFieldToTab($fields, "Root.Main", "Address", $this);
+
+        return $fields;
+    }
 ```
 
 You must pass through the parent context ($this), so that the has_one relationship can be set by the `GridFieldDetailForm`.
