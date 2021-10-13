@@ -20,22 +20,6 @@ class HasOneButtonField extends GridField
             throw new Exception('$parent does not have given $hasOneName.');
         }
 
-        $relatedFieldSelector = "#Form_ItemEditForm_{$idField}_Holder";
-
-        Requirements::customCSS("
-            $relatedFieldSelector {
-                border-bottom: 0;
-            }
-
-            $relatedFieldSelector.readonly + fieldset.hasonebutton[data-name='Stage'] {
-                height: 0;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                pointer-events: none;
-            }
-        ");
-
         $tabFieldList = $fields->fieldByName($tab)->Fields();
         $tabFields = $tabFieldList->dataFields();
 
@@ -50,8 +34,32 @@ class HasOneButtonField extends GridField
             if (preg_match("/^(.+?)ID$/", $fieldName, $matches)) {
                 $fieldNameLessId = $matches[1];
                 if ($fieldNameLessId === $hasOneName) {
+                    $relatedFieldSelector = "#Form_ItemEditForm_{$idField}_Holder";
+                    $fields->addFieldToTab(
+                        $tab,
+                        LiteralField::create(
+                            "{$hasOneName}_HasOneButtonFieldStyle",
+                            "
+                                <style>
+                                    $relatedFieldSelector {
+                                        border-bottom: 0;
+                                    }
+
+                                    $relatedFieldSelector.readonly + fieldset.hasonebutton[data-name='$hasOneName'] {
+                                        height: 0;
+                                        margin: 0;
+                                        padding: 0;
+                                        overflow: hidden;
+                                        pointer-events: none;
+                                    }
+                                </style>
+                            "
+                        )
+                    );
+
                     $nextKey = array_keys($tabFields)[$fieldIndex + 1] ?? '';
                     $fields->addFieldToTab($tab, new self($hasOneName, $hasOneName, $parent, $field), $nextKey);
+
                     $added = true;
                     break;
                 }
