@@ -33,32 +33,38 @@ class HasOneButtonField extends GridField
             $matches = [];
             if (preg_match("/^(.+?)ID$/", $fieldName, $matches)) {
                 $fieldNameLessId = $matches[1];
+
                 if ($fieldNameLessId === $hasOneName) {
                     $relatedFieldSelector = "#Form_ItemEditForm_{$idField}_Holder";
+                    $fieldsetSelector = "fieldset.hasonebutton[data-name='$hasOneName']";
+
+                    $styleKey = "{$hasOneName}_HasOneButtonFieldStyle";
+                    $nextKey = array_keys($tabFields)[$fieldIndex + 1] ?? '';
+
                     $fields->addFieldToTab(
                         $tab,
                         LiteralField::create(
-                            "{$hasOneName}_HasOneButtonFieldStyle",
+                            $styleKey,
                             "
                                 <style>
                                     $relatedFieldSelector {
                                         border-bottom: 0;
                                     }
 
-                                    $relatedFieldSelector.readonly + fieldset.hasonebutton[data-name='$hasOneName'] {
-                                        height: 0;
-                                        margin: 0;
-                                        padding: 0;
-                                        overflow: hidden;
-                                        pointer-events: none;
+                                    $relatedFieldSelector.readonly + $fieldsetSelector > :not(a[href$=edit]) {
+                                        display: none;
+                                    }
+
+                                    $fieldsetSelector > div {
+                                        margin-bottom: 5px;
                                     }
                                 </style>
                             "
-                        )
+                        ),
+                        $nextKey
                     );
 
-                    $nextKey = array_keys($tabFields)[$fieldIndex + 1] ?? '';
-                    $fields->addFieldToTab($tab, new self($hasOneName, $hasOneName, $parent, $field), $nextKey);
+                    $fields->addFieldToTab($tab, new self($hasOneName, $hasOneName, $parent, $field), $styleKey);
 
                     $added = true;
                     break;
@@ -108,6 +114,15 @@ class HasOneButtonField extends GridField
     {
         return $this->record;
     }
+
+    /**
+     * This field will hide the "new"/"unlink" button if the related field is readonly.
+     * @return $this
+     */
+    public function performReadonlyTransformation()
+    {
+        return $this;
+    }
 }
 
 class GridFieldHasOneEditButton extends GridFieldAddNewButton implements GridField_HTMLProvider
@@ -137,9 +152,9 @@ class GridFieldHasOneEditButton extends GridFieldAddNewButton implements GridFie
 
         $objectName = $singleton->i18n_singular_name();
 
-        $editButtonData = $recordExists ? new ArrayData([
+        $viewEditButtonData = $recordExists ? new ArrayData([
             'NewLink' => Controller::join_links($gridField->Link('item'), $record->ID, 'edit'),
-            'ButtonName' => 'Edit existing',
+            'ButtonName' => 'View/edit existing',
         ]) : null;
 
         $newButtonData = new ArrayData([
@@ -149,23 +164,23 @@ class GridFieldHasOneEditButton extends GridFieldAddNewButton implements GridFie
 
         switch ($this->relatedField ? get_class($this->relatedField) : '') {
             case DropdownField::class:
-                $message = "Choose an existing <em>$objectName</em> from the above dropdown, or...<br />";
+                $message = "<div>Choose an existing <em>$objectName</em> from the above dropdown, or...</div>";
                 break;
             case NumericField::class:
-                $message = "Type the ID of an existing <em>$objectName</em> in the above field, or...<br />";
+                $message = "<div>Type the ID of an existing <em>$objectName</em> in the above field, or...</div>";
                 break;
             default:
-                $message = "Assign an existing <em>$objectName</em> above, or...<br />";
+                $message = "<div>Assign an existing <em>$objectName</em> above, or...</div>";
                 break;
         }
 
         $fragments = [
             'before' => $message,
-            'after' => $newButtonData->renderWith('GridFieldAddNewbutton'),
+            'after' => $newButtonData->renderWith('GridFieldAddNewButton'),
         ];
 
-        if ($editButtonData) {
-            $fragments['before'] .= $editButtonData->renderWith('GridFieldAddNewbutton');
+        if ($viewEditButtonData) {
+            $fragments['before'] .= $viewEditButtonData->renderWith('GridFieldAddNewButton');
         }
 
         return $fragments;
