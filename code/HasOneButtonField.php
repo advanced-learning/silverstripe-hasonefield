@@ -107,6 +107,7 @@ class HasOneButtonField extends GridField
             ->addComponent(new GridFieldDetailForm())
             ->addComponent(new GridFieldHasOneEditButton($relatedField));
         $list = new HasOneButtonRelationList($this->record, $name, $parent);
+        $list = $list->filter('ID', $this->record->ID);
         parent::__construct($name, $title, $list, $config);
     }
 
